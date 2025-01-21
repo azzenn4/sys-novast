@@ -20,14 +20,13 @@ import torch.nn.functional as F
 import pygame
 from concurrent.futures import ProcessPoolExecutor
 import re
-from ollama import chat # << local LLM manager 
+from ollama import chat 
 from parler_tts import ParlerTTSForConditionalGeneration
 import sounddevice as sd
 import spacy
 from collections import Counter
 import threading
 import queue
-
 
 os.environ["TRANSFORMER_NO_ADVISORY_WARNINGS"] = "1"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
@@ -41,65 +40,23 @@ else:
     print(f"CUDA is not available: {torch.cuda.is_available()}")
     exit(1)
 
-
-pygame.mixer.init()
-
-
-
-
-
-'''
-
-Labels
-
-
-'''
-
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-'''
-
-    deploy model " 6 emotions classfication "
-    deploy model " suicidal rate "
-    
-'''
-
-
-'''
-
-
-    SESUAIKAN DENGAN KEMAMPUAN HARDWARE !!!
-
-    BOLEH PAKAI VERSI QUANTIZED ATAU YANG NON-QUANTIZED (**AKURASI LEBIH BAIK !!)
-
-
-'''
-
-
 
 # Load quantized 'blackstar_6' model and tokenizer
 model_6_path = "./quantized_blackstar_6.pth"
-tokenizer_6 = RobertaTokenizer.from_pretrained("./blackstar_6")
-model_6 = RobertaForSequenceClassification.from_pretrained("./blackstar_6", num_labels=6)
+tokenizer_6 = RobertaTokenizer.from_pretrained("./models/blackstar_6")
+model_6 = RobertaForSequenceClassification.from_pretrained("./models/blackstar_6", num_labels=6)
 model_6.load_state_dict(torch.load(model_6_path), strict=False)
 model_6 = model_6.to(device)
 print("Quantized model 'blackstar_6' and its tokenizer loaded.")
 
-
-
-
 # Load quantized 'blackstar_1' model and tokenizer
 model_1_path = "./quantized_blackstar_1.pth"
-tokenizer_1 = RobertaTokenizer.from_pretrained("./blackstar_1")
-model_ax1 = RobertaForSequenceClassification.from_pretrained("./blackstar_1", num_labels=2)
+tokenizer_1 = RobertaTokenizer.from_pretrained("./models/blackstar_1")
+model_ax1 = RobertaForSequenceClassification.from_pretrained("./models/blackstar_1", num_labels=2)
 model_ax1.load_state_dict(torch.load(model_1_path), strict=False)
 model_ax1 = model_ax1.to(device)
 print("Quantized model 'blackstar_1' and its tokenizer loaded.")
-
-
-
 
 # Load voice generation
 model_vgen = ParlerTTSForConditionalGeneration.from_pretrained("parler-tts/parler-tts-mini-jenny-30H").to(device)
@@ -109,46 +66,20 @@ print("Voice Generation Loaded.")
 # Load spacy NER
 nlp = spacy.load("en_core_web_sm")
 
-
-
 if torch.cuda.is_available():
     print("Final GPU Memory Allocated:", torch.cuda.memory_allocated())
     print("Final GPU Memory Reserved:", torch.cuda.memory_reserved())
     
-
 print(model_ax1)
+
+'''
+
+    Composite Emotions, inspired by :
     
-    
-     
-    
-
-'''
-
-    deploy model " 1 emotions classfication "
-
-'''
-
-
-# roberta depression
-
-
-'''
-
-    deploy model " 6 emotions classfication
-
-'''
-
-
-
-
-'''
-
-    Composite Emotions
-    
-    Paul Ekman's Theory Of Emotions
-    Russels J. A Dimension of Emotion
-    Richard Lazarus Cognitive Appraisal
-    Jaak Panksepp Affective Neuroscience
+        Paul Ekman's Theory Of Emotions
+        Russels J. A Dimension of Emotion
+        Richard Lazarus Cognitive Appraisal
+        Jaak Panksepp Affective Neuroscience
     
 '''
 composite_emotions = {
@@ -197,10 +128,41 @@ composite_emotions = {
 
 '''
 
-    logits processing
+    Logits Post Processing for Multiclass
 
 '''
+'''
 
+    Multiclass Logits Post Processing are highly optional for generic tasks,
+
+    Since humans process emotions differently and biologically for each individual,
+    its safe to say that there are no fixed rule for such a thing
+
+    .Thus,
+    
+    it all comes down to user personal preference to determine NovaAstra characteristics
+    for processing emotion extraction. Though this is highly technical and may require
+    holistic approach.
+
+    For example,
+    without Logits Postprocessing :
+
+        Joy : 99.8%
+        Anger : 0.2%
+        Fear : 0.0%
+        Surprise : 0.0%
+        Love : 0.0%
+        Sadness : 0.0%
+
+    Summarizing the example, we know that NovaAstra will perceive emotion
+    more vividly. But this comes at a downside, which is the lack of diverse
+    emotional-point-of-view and lack of contextual composite emotion-awareness.
+
+    The solution is to implement temperature scaling with thresholds,
+    simulating a more comprehensive emotional intelligence found in
+    thoughtful individual.
+    
+'''
 
 def apply_temperature_scaling(logits, temperature):
     return logits / temperature
@@ -214,8 +176,10 @@ label_map = {v: k for k, v in emotion_to_label.items()}
 def get_emotion(texts, threshold=0.2, temperature=1.0, top_n=3):
     try:
         inputs = tokenizer_6(texts, return_tensors="pt", truncation=True, padding=True, max_length=128*2).to(device)
-        with torch.no_grad():
-            with torch.amp.autocast(device_type='cuda', enabled=True):  # FP16 Auto Mixed Precision AMP
+        # Disable gradient accumulation, since its an inference not training
+        with torch.no_grad(): 
+            # GPU must support FP16 computation.. , by using amp autocast on GPU, theres a minimal but noticeable inference speed
+            with torch.amp.autocast(device_type='cuda', enabled=True):  
                 outputs = model_6(**inputs)
                 logits = outputs.logits
         logits = apply_temperature_scaling(logits, temperature)
@@ -224,7 +188,8 @@ def get_emotion(texts, threshold=0.2, temperature=1.0, top_n=3):
         total_prob = sum(emotion_percentages.values())
         emotion_percentages = {emotion: float((prob / total_prob) * 100) for emotion, prob in emotion_percentages.items()}
         filtered_emotions = apply_confidence_threshold(emotion_percentages, threshold)
-        dominant_emotion = max(filtered_emotions.items(), key=lambda x: x[1], default=("neutral", 0))[0]
+        # fallback option = neutral, though highly-unlikely with post-processing
+        dominant_emotion = max(filtered_emotions.items(), key=lambda x: x[1], default=("neutral", 0))[0] 
         composite_emotion_probabilities = {}
         for composite_emotion, emotion_indices in composite_emotions.items():
             composite_probs = [probabilities[i] for i in emotion_indices]
@@ -242,7 +207,6 @@ def get_emotion(texts, threshold=0.2, temperature=1.0, top_n=3):
             "dominant_composite_percentage": top_composites.get(dominant_composite_emotion, 0),
             "top_composite_emotions": top_composites,
         }
-
     except Exception as e:
         print(f"Error: {str(e)}")
         return {
@@ -254,29 +218,37 @@ def get_emotion(texts, threshold=0.2, temperature=1.0, top_n=3):
             "top_composite_emotions": {},
         }
 
+
+'''
+
+    Logits Post Processing for Binary
+
+'''
+
+'''
+
+ For now. Currently, the models are fine tuned off "almost relevant" datasets to simulate empathy
+ by suicide and non-suicide probabilities, in the meantime it is expected
+ to fine-tune the model with a more relevant dataset. 
+ This is due to initial goal for NovaAstra as a Psychologist that handle
+ tests for suicidal subjects in a University Project. 
+
+ But please be cautious when using the quantized models for Mental-Health related task, this is due to
+ a significantly lower accuracy for analysis tasks that applies to both Binary and Multiclass.
+
+'''
 suicide_label = {'suicide': 1, 'non-suicide': 0}
 def get_suicide_risk(texts):
     try:
-        # Tokenize the input text
         inputs = tokenizer_1(texts, return_tensors="pt", truncation=True, padding=True, max_length=64).to(device)
-
-        # Run through the model using FP16 for efficiency
         with torch.no_grad():
-            with torch.amp.autocast(device_type='cuda', enabled=True):  # FP16 Auto Mixed Precision
+            with torch.amp.autocast(device_type='cuda', enabled=True):  
                 outputs = model_ax1(**inputs)
                 logits = outputs.logits
-
-        # Calculate probabilities
         probabilities = torch.softmax(logits, dim=1).detach().cpu().numpy()[0]
-        
-        # Convert probabilities to Python floats
         suicide_prob = float(probabilities[1])  # Convert to float
         non_suicide_prob = float(probabilities[0])  # Convert to float
-        
-        # Get predicted label
         predicted_label = 'suicide' if suicide_prob > non_suicide_prob else 'non-suicide'
-
-        # Return results as a dictionary
         return {
             'label': predicted_label,
             'probabilities': {
@@ -297,19 +269,12 @@ def get_suicide_risk(texts):
     VECTOR DATABASE (Conversation Memory)
 
 '''
-
-dimension = 768  # RoBERTa base model produces 768-dimensional embeddings
+dimension = 768  # RoBERTa base model has 768-dimensional embeddings
 index = faiss.IndexFlatL2(dimension)
 metadata = []
 
-
-
-# Function to get embedding for blackstar_6 (emotion detection)
 def get_embedding(texts, model, tokenizer, device):
-    # Tokenize the input texts
     inputs = tokenizer(texts, return_tensors="pt", truncation=True, padding=True, max_length=512)
-    
-    # Ensure the model returns hidden states
     with torch.no_grad():
         if isinstance(model, RobertaForSequenceClassification):
             # For fine-tuned classification model
@@ -317,59 +282,38 @@ def get_embedding(texts, model, tokenizer, device):
         else:
             # For models like RobertaModel or others where embeddings are needed
             outputs = model(**inputs.to(device), output_hidden_states=True)
-
-    # Extract hidden states from the model's output
     hidden_states = outputs.hidden_states
-    
-    # Take the last hidden state (the embeddings)
     embedding = hidden_states[-1].mean(dim=1).squeeze().cpu().numpy()
     
     return embedding
 
-
 def log_results(texts, model, tokenizer_6, device):
     global metadata
-    # Get the embedding for the new text (blackstar_6 for emotion detection)
     embedding_6 = get_embedding(texts, model, tokenizer_6, device)
-    
     # Check if the embedding already exists in the FAISS index (to avoid duplicates)
     D, I = index.search(np.array([embedding_6]), k=1)  # Search for the nearest neighbor
-
     # If the distance is below a threshold, it indicates that the text is similar to an existing one
     # You can adjust the threshold based on your dataset
     if D[0][0] < 0.8:  # Example threshold, adjust as necessary
-        return  # Skip logging and processing if it's a duplicate
-
-    # Get emotions and suicide risk for the new text
+        return  # Skip storage if it's a duplicate
     emotion_result = get_emotion(texts)
     suicide_result = get_suicide_risk(texts)
-
-    # Extract only the primary emotion probabilities
     primary_emotion_probabilities = emotion_result["primary_emotion_probabilities"]
-
-    print(primary_emotion_probabilities)
-    
-    # Create the log data dictionary (only log relevant emotion info)
+    # print(primary_emotion_probabilities) # uncomment for debugging
     log_data = {
         "text": texts,
         "primary_emotion_probabilities": primary_emotion_probabilities,
         "suicide_risk_probabilities": suicide_result["probabilities"] 
     }
-
-    # Add the embedding to the FAISS index for blackstar_6
+    # add the embedding to the FAISS index 
     index.add(np.array([embedding_6]))
-
-    # Append the log data to metadata
+    # append the log data to metadata
     metadata.append(log_data)
     
-
-    
-
-# Function to normalize embeddings (for cosine similarity)
+# normalize embeddings (for cosine similarity)
 def normalize_embeddings(embeddings):
     return embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
-
-# Function to calculate cosine similarity between two vectors
+# cosine similarity between two vectors
 def calculate_cosine_similarity(embedding1, embedding2):
     return cosine_similarity([embedding1], [embedding2])[0][0]
 
@@ -397,21 +341,24 @@ dim = 2
 ]
 '''
 
-
-
-
-
-
-
 '''
 
-    LSTM FORECASTER "Overall Emotion FLow Thorugh Conversations"
+    Unidirectional LSTM,
 
+    The unidirectional LSTM is used to simulate how an individual perceives emotions during a conversation. 
+    Instead of evaluating emotions after each conversational turn (e.g., sentence by sentence), 
+    the LSTM processes the entire sequence of metadata, calculating the average emotion across the sequence length.
+    
+    This approach reflects how humans often judge emotions holistically, after accumulating enough context, 
+    rather than immediately interpreting emotions from isolated sentences or short exchanges. 
+    By considering the entire conversation history, the model aims to make a more informed and contextually aware emotional judgment.    
+    The LSTM is chosen for its ability to handle sequential data effectively, 
+    ensuring the final output represents a well-rounded emotional context based on the conversation's overall flow.
+    
 '''
 def prepare_emotion_sequences(metadata, seq_length, forecast_steps):
-    # Extract the primary emotion probabilities
+    # extract primary emotion probabilities
     emotion_probabilities = []
-
     for entry in metadata:
         if "primary_emotion_probabilities" in entry:
             primary_emotions = entry["primary_emotion_probabilities"]
@@ -419,115 +366,109 @@ def prepare_emotion_sequences(metadata, seq_length, forecast_steps):
             if isinstance(primary_emotions, dict):
                 # Convert percentages to probabilities (divide by 100)
                 probabilities = [value / 100.0 for value in primary_emotions.values()]  # Convert percentages to probabilities
-                
                 # Print the original percentages and the converted probabilities
-                print("Original percentages:", primary_emotions)
-                print("Converted probabilities:", probabilities)
-                
+                # print("Original percentages:", primary_emotions) # uncomment for debugging
+                # print("Converted probabilities:", probabilities) # uncomment for debugging
                 emotion_probabilities.append(probabilities)
             else:
                 print(f"Error: Expected 'primary_emotion_probabilities' to be a dictionary in entry {entry}")
         else:
             print(f"Error: Missing 'primary_emotion_probabilities' in entry {entry}")
-
     emotion_probabilities = np.array(emotion_probabilities, dtype=float)
-
     if emotion_probabilities.shape[0] == 0:
         raise ValueError("No valid emotion probabilities found in metadata.")
-    
     if len(emotion_probabilities) < (seq_length + forecast_steps):
         print(f"Error: Not enough data points to create sequences. Required: {seq_length + forecast_steps}, Found: {len(emotion_probabilities)}")
         return np.array([]), np.array([])
-
     # Get the number of features (emotions)
     num_features = emotion_probabilities.shape[1]
-    
     # Create sequences for multi-step forecasting
     X, y = prepare_sequences(emotion_probabilities, seq_length, forecast_steps)
-
     return X, y, num_features
 
-# Prepare data for multi-step forecasting
 def prepare_sequences(data, seq_length, forecast_steps):
     X, y = [], []
     for i in range(len(data) - seq_length - forecast_steps):
         X.append(data[i:i+seq_length])
-        y.append(data[i+seq_length:i+seq_length+forecast_steps])  # Forecast the next `forecast_steps` points
+        # Forecast the next `forecast_steps` points
+        y.append(data[i+seq_length:i+seq_length+forecast_steps])  
     return np.array(X), np.array(y)
 
-# LSTM Model for Multi-Step Forecasting
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, forecast_steps, num_features):
         super(LSTMModel, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
         self.forecast_steps = forecast_steps
-        self.num_features = num_features
-        
+        self.num_features = num_features        
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
-        self.fc = nn.Linear(hidden_size, num_features * forecast_steps)  # Output size = num_features * forecast_steps
+        # output size = num_features * forecast_steps
+        self.fc = nn.Linear(hidden_size, num_features * forecast_steps)  
 
     def forward(self, x):
         h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device)
-        
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(x.device) 
         out, _ = self.lstm(x, (h0, c0))
-        out = self.fc(out[:, -1, :])  # Output for the last time step in the sequence
-        
-        # Reshape output to match forecast steps
-        out = out.view(-1, self.forecast_steps, self.num_features)  # Reshape output to (batch_size, forecast_steps, num_features)
-        out = F.softmax(out, dim=2)  # Softmax across the features (emotions)
+         # output for the last time step in the sequence
+        out = self.fc(out[:, -1, :]) 
+        # reshape output > (batch_size, forecast_steps, num_features)
+        out = out.view(-1, self.forecast_steps, self.num_features)  
+        # softmax across features (emotions)
+        out = F.softmax(out, dim=2)  
         return out
 
-# Normalize data for training (optional, but often helps LSTMs perform better)
+# normalize data for training. This is optional, but often helps LSTMs perform better
 def normalize_data(X, y):
-    # Debugging step: Check the structure and type of X
-    print(f"X type: {type(X)}")
-    print(f"X shape: {X.shape}")
-    
-    # Inspect the first few rows of X
-    print("First 5 rows of X:", X[:5])
-
-    # Check for NaN or Inf values in X
+    # check the structure and type of X
+    # print(f"X type: {type(X)}") # uncomment for debugging
+    # print(f"X shape: {X.shape}") # uncomment for debugging
+    # inspect the first few rows of X
+    # print("First 5 rows of X:", X[:5]) # uncomment for debugging
+    # check for NaN or Inf values in X
     if np.any(np.isnan(X)) or np.any(np.isinf(X)):
         print("Warning: X contains NaN or Inf values.")
-        # Replace NaN/Inf with zero (or another suitable value)
+        # replace NaN/Inf with zero (or another suitable value)
         X = np.nan_to_num(X)
-
-    # Ensure X is in the correct numeric format (float)
+    # check if X is in the correct numeric format (float)
     if X.dtype != np.float32 and X.dtype != np.float64:
         print("Converting X to float type...")
-        X = X.astype(float)  # Convert all values to float
+        # convert all values to float
+        X = X.astype(float)  
 
-    # If X contains a list of dictionaries, convert it to a numerical array
+    # ff X contains a list of dictionaries, convert it to a numerical array
     if isinstance(X, list) and isinstance(X[0], dict):
         print("Converting dictionaries to lists of values...")
-        X = np.array([list(entry.values()) for entry in X])  # Convert dict to list of values
-        print(f"X after conversion: {X.shape}")  # Debugging line to check the shape
+        # convert dict to list of values
+        X = np.array([list(entry.values()) for entry in X])  
+        # debugging line to check the shape
+        print(f"X after conversion: {X.shape}")  
     
-    # Reshape X to 2D for scaling (samples * timesteps, features)
-    X_reshaped = X.reshape(-1, X.shape[-1])  # Flatten the sequence dimension (52 * 5, 6)
+    # reshape X to 2D for scaling (samples * timesteps, features)
+    # flatten sequence dimension (52 * 5, 6)
+    X_reshaped = X.reshape(-1, X.shape[-1])  
     
-    # Initialize and fit the scaler
+    # initialize to fit the scaler
     scaler = StandardScaler()
-    X_scaled_reshaped = scaler.fit_transform(X_reshaped)  # Apply scaling
+     # apply scaling
+    X_scaled_reshaped = scaler.fit_transform(X_reshaped) 
     
-    # Reshape back to the original 3D shape
-    X_scaled = X_scaled_reshaped.reshape(X.shape[0], X.shape[1], X.shape[2])  # (52, 5, 6)
+    # reshape back to the original 3D shape
+    # (52, 5, 6)
+    X_scaled = X_scaled_reshaped.reshape(X.shape[0], X.shape[1], X.shape[2])  
     
-    # Ensure y is a numpy array and scale it if necessary
-    y_scaled = np.array(y, dtype=float)  # Convert y to float if it's not already
+    # check y is a numpy array and scale it if necessary
+    # convert y to float if it's not already
+    y_scaled = np.array(y, dtype=float)  
     
-    # Debugging: Check the scaled data
-    print(f"X_scaled shape: {X_scaled.shape}")
-    print(f"y_scaled shape: {y_scaled.shape}")
+    # check the scaled data
+    # print(f"X_scaled shape: {X_scaled.shape}") # uncomment for debugging
+    # print(f"y_scaled shape: {y_scaled.shape}") # uncomment for debugging
     
     return X_scaled, y_scaled, scaler
 
-
-# Train and Forecast using the LSTM model (multi-step)
+)
 def train_lstm(X_tensor, y_tensor, input_size, hidden_size, num_layers, num_epochs, learning_rate, forecast_steps, num_features):
-    # Initialize model with all required parameters
+    # initialize model && parameter
     model = LSTMModel(
         input_size=input_size,
         hidden_size=hidden_size,
@@ -535,11 +476,10 @@ def train_lstm(X_tensor, y_tensor, input_size, hidden_size, num_layers, num_epoc
         forecast_steps=forecast_steps,
         num_features=num_features
     )
-    
+    # set criterion - crossentropyloss, since we have 6 label..
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
-
     for epoch in range(num_epochs):
         model.train()
         outputs = model(X_tensor)
@@ -547,33 +487,33 @@ def train_lstm(X_tensor, y_tensor, input_size, hidden_size, num_layers, num_epoc
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        scheduler.step()
+        scheduler.step()       
+        '''
+        
+        # for debugging
         
         if (epoch + 1) % 10 == 0:
             print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
-    
+            
+        '''
     return model
-
 
 def forecast_lstm(model, X_tensor, scaler, forecast_steps, num_features):
     model.eval()
-    last_sequence = X_tensor[-1].unsqueeze(0)  # Take the last sequence
+    # take last sequence
+    last_sequence = X_tensor[-1].unsqueeze(0)  
     with torch.no_grad():
         forecast = model(last_sequence)
-    
     forecast = forecast.squeeze().numpy()
-    
-    # Reshape forecast to (forecast_steps, num_features)
+    # reshape forecast to (forecast_steps, num_features)
     forecast = forecast.reshape(forecast_steps, num_features)
-    
-    # Apply inverse_transform to each time step
+    # apply inverse_transform to each time step
     forecast_original_scale = np.zeros_like(forecast)
     for i in range(forecast_steps):
-        # Reshape each time step to (1, num_features) for inverse transform
+        # reshape each time step to (1, num_features) for inverse transform
         forecast_original_scale[i] = scaler.inverse_transform(forecast[i].reshape(1, -1))
     
     return forecast_original_scale
-
 
 def train_and_forecast(metadata, seq_length, forecast_steps, hidden_size, num_layers, num_epochs, learning_rate):
     try:
@@ -587,7 +527,7 @@ def train_and_forecast(metadata, seq_length, forecast_steps, hidden_size, num_la
                 "forecast": [],
                 "error": "Prepared sequences are empty. Check input data."
             }
-        
+
         print("Normalizing data...")
         X_scaled, y_scaled, scaler = normalize_data(X, y)
         
@@ -598,7 +538,8 @@ def train_and_forecast(metadata, seq_length, forecast_steps, hidden_size, num_la
             }
         
         print("Converting to tensors...")
-        X_tensor = torch.tensor(X_scaled, dtype=torch.float32) # change to float 16 for better perfomance // cost of accuracy
+        # change to float 16 for better perfomance // cost of accuracy
+        X_tensor = torch.tensor(X_scaled, dtype=torch.float32) 
         y_tensor = torch.tensor(y_scaled, dtype=torch.float32) 
         
         print("Training LSTM model...")
@@ -616,10 +557,11 @@ def train_and_forecast(metadata, seq_length, forecast_steps, hidden_size, num_la
         
         print("Making forecasts...")
         forecast = forecast_lstm(model, X_tensor, scaler, forecast_steps, num_features)
-        
-        # Return the forecast in the expected dictionary format
+
+        # return the forecast in the expected dictionary format
         return {
-            "forecast": forecast.tolist(),  # Convert numpy array to list for better compatibility
+            # convert numpy array to list for better compatibility
+            "forecast": forecast.tolist(),  
             "error": None
         }
     
@@ -628,36 +570,19 @@ def train_and_forecast(metadata, seq_length, forecast_steps, hidden_size, num_la
             "forecast": [],
             "error": str(e)
         }
-    
-
 
 def predict_emotions(metadata, seq_length, forecast_steps, hidden_size, num_layers, 
                     num_epochs, learning_rate):
-    # Forecast emotion probabilities
     result = train_and_forecast(metadata, seq_length, forecast_steps, hidden_size, 
                               num_layers, num_epochs, learning_rate)
-    
-    # Check if there was an error
     if result.get("error") is not None:
         print(f"Error: {result['error']}")
         return
-
-    # Get the forecast data
     forecast = result['forecast']
-
     torch.cuda.empty_cache()
     torch.cuda.synchronize()
     
     return forecast  
-
-
-
-
-
-
-
-
-
 '''
 
     Text Generation : Llama3.2 3B (For most hardware (RTX with VRAM > 4GB))
@@ -668,17 +593,11 @@ def predict_emotions(metadata, seq_length, forecast_steps, hidden_size, num_laye
     For documentation please refer to https://github.com/ollama/ollama
 
 '''
-
-
-
 def text_gen_only(tcp):
-    # Initial cleanup
     global cast_iter
     global metadata
     torch.cuda.empty_cache()
     torch.cuda.synchronize()
-
-    # Memory monitoring function
     def get_gpu_memory_info():
         if torch.cuda.is_available():
             current_device = torch.cuda.current_device()
@@ -687,8 +606,8 @@ def text_gen_only(tcp):
             free = total - allocated
             return {'total': total, 'allocated': allocated, 'free': free}
         return None
-
-    def get_device(threshold_vram_mb=200):  # Reduced threshold and changed to MB
+    # set threshold to your hardware capability
+    def get_device(threshold_vram_mb=200):  
         if torch.cuda.is_available():
             memory_info = get_gpu_memory_info()
             if memory_info and memory_info['free'] >= threshold_vram_mb:
@@ -706,6 +625,7 @@ def text_gen_only(tcp):
         conv_ = emo_flow[-1]
         conv_flow = conv_[0]
 
+        # what emotion to react as relevant to opposite emotion (NovaAstra | Subject)
         emotion_to_reaction = {
             'sadness': "compassion", 'joy': "cheerfulness",
             'love': "affection", 'anger': "calmness",
@@ -733,144 +653,105 @@ def text_gen_only(tcp):
             stream=True,
             options={
                 "num_ctx": 8192,  
-                "f16_kv": True, #   fp16 , lebih efisien
+                "f16_kv": True, #  set to FP16
                 "seed": 42
             }
         )
         generated_text = "".join(chunk['message']['content'] for chunk in stream)
-        print(f"Llama said : {generated_text}")
+        # print(f"Llama said : {generated_text}") # uncomment for debugging
         global jenny_color 
         jenny_color = (244, 0, 252)
+        # empty metadata
         metadata = []
-        print(f"Metadata is cleared after Jenny's speech. Proof :{metadata}")
-
-
+        # print(f"Metadata is cleared after Jenny's speech. Proof :{metadata}") # uncomment for debugging
     except Exception as e:
         print(f"Error in voice generation: {e}")
         return None
-
     finally:
-       # Cleanup
+       # cleanup
         torch.cuda.empty_cache()
         torch.cuda.synchronize()
         generated_text = "Jenny :" + generated_text
+        # text generation is done via separate thread for efficiency :
         gen_queue.put(generated_text)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 '''
 
-    Since OpenCV doesn't support word wrapping,
-
-    i've made my own exclusively for Llama3.2 Text Generation
+    Since OpenCV doesn't support word wrapping :
 
 '''
-
-
 def wrap_text(text, font, max_width):
     words = text.split(' ')
     lines = []
     current_line = ''
-
-    # Iterate over the words and create lines that fit within the max width
     for word in words:
-        # Try adding the next word to the current line
         test_line = current_line + (' ' if current_line else '') + word
         (w, h), _ = cv2.getTextSize(test_line, font[0], font[1], font[2])
-
-        # If the line is too wide, start a new line
         if w <= max_width:
             current_line = test_line
         else:
-            # Otherwise, append the current line and start a new one with the current word
             if current_line:
                 lines.append(current_line)
             current_line = word
-
-    # Append the last line
     if current_line:
         lines.append(current_line)
-
     return lines
 
 
-
-
-
-
-
-# Default Llama text color
 jenny_color = (244, 0, 252)
-
-# Emo-Flow Metadata
 emo_flow = []
-
-# Preprocess function for OCR
+# preprocess function for OCR
 def preprocess_frame(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
     return thresh
-
-# Function to clean text from OCR output
+# function to clean text from OCR output
 def clean_text(text):
     cleaned_text = " ".join(text.split())
     filtered_texts = re.sub(r'[^a-zA-Z0-9\s]', '', cleaned_text)  # Remove non-alphanumeric characters
     return filtered_texts
-
-# Define OCR processing function
+# main ocr processing
 def ocr_worker(thresh):
     try:
-        # Preprocess the frame
-
-        custom_config = r'--oem 3 --psm 3'  # PSM 3 for simpler block-based text detection
-        
-        # Perform OCR
+        # PSM 3 for simpler block-based text detection, adjust as needed
+        custom_config = r'--oem 3 --psm 3'  
         raw_text = pytesseract.image_to_string(thresh, config=custom_config)
-        
-        # Clean the detected text
         cleaned_text = clean_text(raw_text)
-        
-        # Send the cleaned text using pipe
+        # send the text via multiprocessing pipe (eg. process(1) -> process(2))
         send_text.send(cleaned_text) # >>
     except Exception as e:
         print(f"Error in OCR thread: {str(e)}")
+        
+'''
 
-# Function to handle frame capture and detection
+NovaAstra Interface - OpenCV
 
+We are currently planning to use Qt6; 
+however, we have noticed that Qt6 consumes a significant amount of VRAM and RAM, 
+which could affect scalability. 
+Therefore, 
+we are considering that the OpenCV interface may only be necessary for pre-release stages.
+
+We hope that those who have contributed to this project can better understand the context and potentially provide suggestions or solutions.
+    
+'''
 def capture_and_detect():
     sct = mss()
     monitors = sct.monitors
-    
-    # Get primary monitor (monitor 1)
-    monitor_ = monitors[1]  # Changed from monitors[1] to monitors[0]
-    
-    # Screen dimensions from monitor 1
+    # get primary monitor (monitor 1), set monitors[0] if you have single monitor
+    monitor_ = monitors[1]   
     SCREEN_WIDTH = monitor_['width']
     SCREEN_HEIGHT = monitor_['height']
-    
     frames = 0
     max_visible_lines = 10
     trend_summary = []
+    cast_iter = 0
     mouse = Controller()
     global cast_iter
     global jenny_color
     font = cv2.FONT_HERSHEY_COMPLEX
     met_len = 0
+    # initial text
     generated_text = "Jenny haven't think about something..."
-    
     with ProcessPoolExecutor(max_workers=8) as executor:
         while True:
             try:
@@ -902,85 +783,59 @@ def capture_and_detect():
                 future_thresh = executor.submit(preprocess_frame, region_frame)
                 thresh = future_thresh.result()
                 executor.submit(ocr_worker, thresh)
-
-                
                 detected_texts = ""
                 pep = []
                 tcp = []
                 srsk = 0.0
-
                 if receive_text.poll():
                     try:
-
                         detected_texts = receive_text.recv() # <<
                         cv2.putText(full_screen_frame, f"Preview : {detected_texts}", (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 370), font, 1.1, (255, 255, 255), 1, cv2.LINE_AA)
                         emotion_data = get_emotion(detected_texts)
                         suicide_risk_data = get_suicide_risk(detected_texts)
-
                         pep = emotion_data["primary_emotion_probabilities"]
                         tcp = emotion_data["top_composite_emotions"]
                         srsk = suicide_risk_data["probabilities"]["suicide_prob"]
 
-
                         if frames % 10 == 0:
-
                             log_results(detected_texts, model_6, tokenizer_6, device)
-                            
-
-                            # Call predict_emotions only every 2000 frames
+                            # generate response every 70 frames
                             if met_len % 70 == 0 and met_len != 0:
-
                                 generated_text = "Jenny about to say something......"
                                 jenny_color = (24, 3, 255)
 
                                 forecast = predict_emotions(metadata, 
-                                                            seq_length=65,          # Moderate sequence length
-                                                            forecast_steps=5,       # Predict 5 steps forward
-                                                            hidden_size=8,         # Smaller hidden size to prevent overfitting
-                                                            num_layers=1,           # Use 2 LSTM layers to avoid overfitting
-                                                            num_epochs=5,          # Reduce number of epochs to prevent overfitting
-                                                            learning_rate=1e-2)     # Lower learning rate for stable training
-
-                                # Update Summary 
+                                                            seq_length=65,          # moderate sequence length
+                                                            forecast_steps=5,       # predict 5 steps forward
+                                                            hidden_size=8,         
+                                                            num_layers=1,           # use 2 LSTM layers to avoid overfitting
+                                                            num_epochs=5,          # reduce number of epochs to prevent overfitting
+                                                            learning_rate=1e-2)     # lower learning rate for stable training
+                                # update Summary 
                                 trend_summary = []
-                                
-
-                                # Calculate average probabilities across all time steps
+                                # calculate average probabilities across all time steps
                                 avg_probs = {emotion: sum(step[i] for step in forecast) / len(forecast) 
                                             for i, emotion in emotion_to_label.items()}
-                                
-                                # Sort and display average emotions
+                                # sort and display average emotions
                                 sorted_avgs = sorted(avg_probs.items(), key=lambda x: x[1], reverse=True)
                                 trend_summary.append("Predicted Conversational Flow:")
                                 total_avg = sum(prob for _, prob in sorted_avgs)
-
-
                                 
                                 for emotion, avg in sorted_avgs:
                                     percentage = (avg / total_avg * 100) if total_avg > 0 else 0
                                     trend_summary.append(f"{emotion.capitalize():8}: {percentage:.1f}% probability in the next '20' turns")
-                                
-                                
-
-                                emo_flow = sorted(sorted_avgs, key=lambda x: x[1], reverse=False)  
-                                   
+                                emo_flow = sorted(sorted_avgs, key=lambda x: x[1], reverse=False)                                     
                                 trend_summary.append(f"Renewal of metadata || Iteration :: [ {cast_iter} ] :: ")
-
-
-
+                                # empty GPU memory for text generation
                                 torch.cuda.empty_cache()
                                 torch.cuda.synchronize()
                                 threading.Thread(target=text_gen_only, args=(tcp,)).start()
                                 cast_iter += 1
-
-
-
                     except Exception as e:
                         print(f"Error processing text: {str(e)}")
                 else:
                     pass
-
-                # Display the base information
+                # display base information
                 text_x = 10
                 base_text_y = 50
                 cv2.putText(full_screen_frame, f"PEP: {pep}", (text_x, base_text_y), font, 1.1, (255, 255, 255), 1, cv2.LINE_AA)
@@ -989,72 +844,63 @@ def capture_and_detect():
                 cv2.putText(full_screen_frame, f"Frames: {frames}", (text_x, base_text_y + 130), font, 1.1, (255, 255, 255), 1, cv2.LINE_AA)
                 cv2.putText(full_screen_frame, f"Metadata: {met_len}", (text_x, base_text_y + 170), font, 1.1, (255, 255, 255), 1, cv2.LINE_AA)
                 vram_bytes = torch.cuda.memory_allocated(device='cuda')
-                vram_gb = vram_bytes / (1024 ** 3)  # Convert bytes to gigabytes
+                vram_gb = vram_bytes / (1024 ** 3)  # convert bytes to gigabytes
                 cv2.putText(full_screen_frame, f"Allocation: {vram_gb:.2f} Gigabytes", (text_x, base_text_y + 210), font, 1.1, (255, 255, 255), 1, cv2.LINE_AA)
                                                                                                        
                 if not gen_queue.empty():
-                    generated_text = gen_queue.get()
-                
-                max_width = full_screen_frame.shape[1] - 100 # 100 margin between screen edge
+                    generated_text = gen_queue.get()    
+                # 100 margin between screen edge
+                max_width = full_screen_frame.shape[1] - 100 
 
                 lines = wrap_text(generated_text, (font, 0.9, 1), max_width)
                 for i, line in enumerate(lines):
-                    text_y = (base_text_y + 630) + i * 30  # Update y position for each line
+                    # update y position for each line
+                    text_y = (base_text_y + 630) + i * 30  
                     cv2.putText(full_screen_frame, f"{line}", (text_x + 20, text_y), font, 0.9, jenny_color, 1, cv2.LINE_AA)
-
-
-                # Set the initial Y position for the scrolling text
+                # set the initial Y position for the scrolling text
                 emotion_text_y = 100
                 line_height = 25
-                # Calculate the starting Y position for trend summary
+                # calculate the starting Y position for trend summary
                 trend_start_y = emotion_text_y + (max_visible_lines * line_height) + 30
-
-                # Display trend summary with safety checks
-                if trend_summary:  # Only process if trend_summary is not empty
+                # display trend summary with safety checks
+                # only process if trend_summary is not empty
+                if trend_summary:  
                     trend_summary_len = len(trend_summary)
-                    if trend_summary_len > 0:  # Additional check for safety
+                    # additional check for safety
+                    if trend_summary_len > 0:  
                         for j, line in enumerate(trend_summary):
-                            # Ensure we don't exceed the list bounds
+                            # ensure to not exceed the list bounds
                             trend_line_index = j % trend_summary_len
                             cv2.putText(full_screen_frame, trend_summary[trend_line_index],
                                     (10 + 10, trend_start_y + (j * line_height)),
                                     font, 0.7, (255, 255, 255), 1, cv2.LINE_AA)
-
-                    
-                    
-
-                # Draw blue rectangle around detection region
+                # draw blue rectangle around detection region
                 x_offset = region['left']
                 y_offset = region['top']
-
                 cv2.rectangle(full_screen_frame, (x_offset, y_offset), 
                             (x_offset + region['width'], y_offset + region['height']), 
-                            (255, 0, 0), 2)
-                
-                # Resize frame for smaller window
+                            (255, 0, 0), 2) 
+                # resize frame for smaller window
                 scaled_frame = cv2.resize(full_screen_frame, (1200, 600))
                 frames += 1
-
-                # Display the frame
+                # display the frame
                 cv2.imshow("Jenny", scaled_frame)
-
+                # empty GPU cache every frames
                 torch.cuda.empty_cache()
                 torch.cuda.synchronize()
                 
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q'):
                     break
-
             except Exception as e:
                 print(f"Error : {e} . Likely needs more information to run")
                 pass
-
-
-
 if __name__ == "__main__":
-    cast_iter = 0
-    receive_text, send_text = multiprocessing.Pipe(duplex=False)  # unidirectional pipe, one way
+    # unidirectional pipe, one way set 'duplex=False', two way set 'duplex=True' : which is not in this case, and shouldn't be
+    receive_text, send_text = multiprocessing.Pipe(duplex=False)  
+    # queue for LLAMA3.2 (since it runs on separate thread to maintain interface responsiveness
     gen_queue = queue.Queue()
+    # capture_and_detect is the main process..
     capture_and_detect()
     
     
