@@ -1,0 +1,5 @@
+Propose new features or optimization :
+
+> Built-in real time user voice recognition for communicating with the AI via keybinding.
+> Overwrite legacy RoBERTa attention mechanism with FlashAttention
+> JIT C/C++ compiler for several functions
