@@ -20,7 +20,7 @@
     in production environments. Use it at your own discretion and with caution. **Read Further 
     Notice at the End**
 
-    This AI system is developed for adequate scalability with no need to use Google Colab or
+    System-NovaAstra is developed for adequate scalability with no need to use Google Colab or
     other Cloud Computing services. It can run locally on your Laptop or Desktop, provided
     the hardware meets the requirements.
 
@@ -32,19 +32,18 @@
 
 
     The system has been optimized and tested using the "LOWEST MINIMUM REQUIREMENT"
-    specifications (detailed below). For reference, initial testing specifications can be
+    specifications (detailed below). For reference, initial hardware specification can be
     found in the "DEVELOPMENT HARDWARE" section.
 
     Linux is the recommended operating system, as kernel parameter optimization is crucial
     and Linux offers superior I/O performance (eg. Tesseract-OCR)
 
     Developer's Vision:
-    This project is provided as Open-Source software specifically designed for Indonesia's
-    mental health industry. It is not intended for revenue generation or profit, but rather
-    to advance the cause of "AI for Indonesia 2020-2045." . 
     
-    However, developer sees an opportunity
-    that this project have a potential for alot more diverse use.
+    Initial goal of this project is provided as an Open-Source software specifically designed for the
+    mental health industry. It is not intended for revenue generation or profit.
+    
+    Thus, developer sees an opportunity that this project have a potential for alot more diverse use.
 
 
 
