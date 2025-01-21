@@ -75,7 +75,7 @@ Training_Args = {
 ## Summary
 
 - For **basic metric checking**, use the Python script example above.
-- For **in-depth analysis**, use a custom script or tool to inspect `trainer_state.json`.
+- For **in-depth visual analysis**, its recommended to use the 'metrics.py' provided under './metrics'
 - For **real-time visualization**, Tensorboard is usually sufficient.
 
 Choose the approach that best fits your needs for metrics evaluation!
