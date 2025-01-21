@@ -24,12 +24,6 @@
     other Cloud Computing services. It can run locally on your Laptop or Desktop, provided
     the hardware meets the requirements.
 
-    While optimization in this AI system may still need additions, Developer have implemented 
-    several robust optimization methods:
-    - Dynamic Quantization
-    - Kernel Parameter (Linux Exclusive)
-    - Concurrent Computing
-
 
     The system has been optimized and tested using the "LOWEST MINIMUM REQUIREMENT"
     specifications (detailed below). For reference, initial hardware specification can be
