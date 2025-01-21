@@ -12,8 +12,6 @@ import numpy as np
 # Define the folder and checkpoint state
 folder = 'path/to/saved_checkpoint'  # Replace with the actual path
 state = 1000  # Replace with the correct checkpoint number
-
-# Build the checkpoint folder name
 checkpoint = f'checkpoint-{state}'
 
 # Construct the full path to trainer_state.json
