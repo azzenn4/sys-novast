@@ -2,11 +2,11 @@ import torch
 from transformers import RobertaForSequenceClassification, RobertaTokenizer
 
 # Load your original models
-model_6 = "blackstar_6"
+model_6 = "../models/blackstar_6"
 model = RobertaForSequenceClassification.from_pretrained(model_6, num_labels=6, ignore_mismatched_sizes=True)
 tokenizer_6 = RobertaTokenizer.from_pretrained(model_6)
 
-model_1 = "blackstar_1"
+model_1 = "../models/blackstar_1"
 model_ax1 = RobertaForSequenceClassification.from_pretrained(model_1, num_labels=2, ignore_mismatched_sizes=True)
 tokenizer_1 = RobertaTokenizer.from_pretrained(model_1)
 
@@ -29,8 +29,8 @@ quantized_model_ax1 = torch.quantization.quantize_dynamic(
 )
 
 # Save the quantized models' state_dict instead of using save_pretrained
-torch.save(quantized_model_6.state_dict(), "quantized_blackstar_6.pth")
-torch.save(quantized_model_ax1.state_dict(), "quantized_blackstar_1.pth")
+torch.save(quantized_model_6.state_dict(), "./quantized_blackstar_6.pth")
+torch.save(quantized_model_ax1.state_dict(), "./quantized_blackstar_1.pth")
 
 # To load back, you can do the following
 # model_6 = RobertaForSequenceClassification.from_pretrained(model_6, num_labels=6)
