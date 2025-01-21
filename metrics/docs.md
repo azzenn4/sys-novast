@@ -78,4 +78,3 @@ Training_Args = {
 - For **in-depth visual analysis**, its recommended to use the 'metrics.py' provided under './metrics'
 - For **real-time visualization**, Tensorboard is usually sufficient.
 
-Choose the approach that best fits your needs for metrics evaluation!
