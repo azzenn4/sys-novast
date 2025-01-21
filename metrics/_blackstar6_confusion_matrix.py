@@ -12,7 +12,7 @@ label_map = {0: 'sadness', 1: 'joy', 2: 'love', 3: 'anger', 4: 'fear', 5: 'surpr
 reverse_label_map = {v: k for k, v in label_map.items()}  # Reverse mapping for converting labels to integers
 
 # Load the dataset
-df = pd.read_csv('MLAI_project/Lexicograph_Emotion_Detect/dataset/emotions.csv')
+df = pd.read_csv('path/to/dataset.csv') # replace with actual .csv dataset * Note : For now, only 6 label
 
 # Ensure the 'label' column exists
 if 'label' not in df.columns:
@@ -41,10 +41,23 @@ train_texts, val_texts, train_labels, val_labels = train_test_split(
     random_state=42
 )
 
-model_6_path = "/home/paxi/VSC/MLAI_project/Lexicograph_Emotion_Detect/quantized_blackstar_6.pth"
-tokenizer = RobertaTokenizer.from_pretrained("/home/paxi/VSC/MLAI_project/Lexicograph_Emotion_Detect/blackstar_6")
-model = RobertaForSequenceClassification.from_pretrained("/home/paxi/VSC/MLAI_project/Lexicograph_Emotion_Detect/blackstar_6", num_labels=6)
-model.load_state_dict(torch.load(model_6_path), strict=False)
+ 
+tokenizer = RobertaTokenizer.from_pretrained("../models/blackstar_6")
+model = RobertaForSequenceClassification.from_pretrained("../models/blackstar_6", num_labels=6)
+
+
+'''
+ If its an original model, you can safely comment 'model_6_path' and 'model.load_state_dict' below
+ otherwise, quantized and modified model must specify and uncomment
+'''
+
+# model_6_path = "../models/blackstar_6"
+# model.load_state_dict(torch.load(model_6_path), strict=True) # set strict=False if its a custom/quantized model 
+
+
+
+
+
 model.eval()  # Set model to evaluation mode
 
 # Define a function for tokenization and encoding
