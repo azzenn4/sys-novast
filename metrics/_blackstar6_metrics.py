@@ -8,9 +8,23 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.ticker as ticker
 import numpy as np
 
-# Define the path to the trainer_state.json file
-checkpoint = 'checkpoint-7000'
-trainer_state_path = os.path.join(f'final_results', checkpoint, 'trainer_state.json')
+
+# Define the folder and checkpoint state
+folder = 'path/to/saved_checkpoint'  # Replace with the actual path
+state = 1000  # Replace with the correct checkpoint number
+
+# Build the checkpoint folder name
+checkpoint = f'checkpoint-{state}'
+
+# Construct the full path to trainer_state.json
+trainer_state_path = os.path.join(folder, checkpoint, 'trainer_state.json')
+
+# Check if the path exists
+if os.path.exists(trainer_state_path):
+    print("Checkpoint Found. Continue")
+else:
+    print("Path does not exist. Check the folder, state, or file.")
+
 themecolor = '#dae4f5'
 gridcolor = 'whitegrid'
 
