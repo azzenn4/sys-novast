@@ -88,7 +88,7 @@ axes[1].set_ylabel('Accuracy')
 
 axes[2].plot(eval_steps, eval_f1_scores, label='Total F1 Score', color='purple', marker='x')
 
-axes[2].set_ylim(0, 1)  .
+axes[2].set_ylim(0, 1)  
 
 axes[2].set_xlabel('Evaluation Steps')
 axes[2].set_ylabel('Total F1 Score')
