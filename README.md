@@ -2,7 +2,7 @@
 ![Alt text](examples/quickview.png)
 
 # Live Demo
-[![Demo](https://img.youtube.com/vi/4Fd5_Mu-kIQ/0.jpg)](https://www.youtube.com/watch?v=W3nKr_7zWZs)
+[![Demo](https://img.youtube.com/vi/W3nKr_7zWZs/hqdefault.jpg)](https://www.youtube.com/watch?v=W3nKr_7zWZs)
 
 
 
