@@ -1,5 +1,5 @@
 # Technical Demo
-![Alt text](examples/tech_demo.mp4)
+![Alt text](https://youtu.be/4Fd5_Mu-kIQ?si=HrF4F_wmjPKnPf3b)
 
 
 
