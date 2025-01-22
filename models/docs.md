@@ -1,1 +1,2 @@
-Save preferred LLM's here, for more context check ../trainer
+Save Multiclass & Binary LLM's here,
+LLM Manager for emotional context awareness will be published for convenience
