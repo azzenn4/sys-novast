@@ -91,8 +91,8 @@
 
  
 
-    > For use on Windows 11 Operating System:
-    > Please check the 'to/your/path' format as it's different from Linux
+> For use on Windows 11 Operating System:
+> Please check the 'to/your/path' format as it's different from Linux
 
 
 
