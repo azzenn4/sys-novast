@@ -1,25 +1,32 @@
 import torch
-from transformers import RobertaForSequenceClassification, RobertaTokenizer, Trainer, TrainingArguments, TrainerCallback, EarlyStoppingCallback, DistilBertConfig
-from datasets import load_dataset, Dataset
-from sklearn.utils.class_weight import compute_class_weight
-import numpy as np
+from transformers import (
+    AutoModelForSequenceClassification, 
+    AutoTokenizer, 
+    Trainer, 
+    TrainingArguments, 
+    TrainerCallback, 
+    EarlyStoppingCallback
+)
+from datasets import Dataset
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import logging
 import os
-import optuna
-from optuna.pruners import MedianPruner
-import optuna.visualization as vis
-import tqdm
 import logging
 
+'''
 
+    Comment for more context found in ../multiclass/_trainer_multiclass.py
+    
+'''
 
-# Setup logging
-os.makedirs('/MLAI_project/Lexicograph_Emotion_Detect/logs', exist_ok=True)
+# uncomment below if using wayland compositor
+# os.environ['QT_QPA_PLATFORM'] = 'xcb'
 logging.basicConfig(level=logging.INFO)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -34,27 +41,15 @@ else:
     print(f"CUDA is not available: {torch.cuda.is_available()}")
     exit(1)
     
-# Specify the new model to use
-previous_model = "roberta-base"
+previous_model = "answerdotai/ModernBERT-base"
 print(f"Model used: {previous_model}")
 choice = input("[1] Confirm Training: ")
 
-# Load the model and tokenizer for RoBERTa
-model = RobertaForSequenceClassification.from_pretrained(previous_model, num_labels=2, 
-                                                         ignore_mismatched_sizes=True, 
-                                                         hidden_dropout_prob=0.3,  
-                                                         attention_probs_dropout_prob=0.3)
-
-tokenizer = RobertaTokenizer.from_pretrained(previous_model)
-
-# Set up the device
+model = AutoModelForSequenceClassification.from_pretrained(previous_model, num_labels=6)
+tokenizer = AutoTokenizer.from_pretrained(previous_model)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-print(f">> Model and tokenizer loaded.\n>> CUDA: {torch.cuda.is_available()}")
-
-
-    
 class LossCallback(TrainerCallback):
     def __init__(self):
         self.train_losses = []
@@ -65,32 +60,24 @@ class LossCallback(TrainerCallback):
             self.train_losses.append(logs["loss"])
         if "eval_loss" in logs:
             self.eval_losses.append(logs["eval_loss"])
-# Initialize the loss callback
+            
 loss_callback = LossCallback()
-
-#
-
 label_map = {'suicide': 1, 'non-suicide': 0}
 
 if choice == "1":
-    # Load the dataset
-    df = pd.read_csv('dataset/clean_suicidal.csv')  # Adjust file path to match your dataset
+    df = pd.read_csv('./dataset/clean_suicidal.csv')   
 
-    # Ensure the required columns exist
     if 'label' not in df.columns or 'text' not in df.columns:
         print("Error: 'text' or 'label' column is missing from the dataset.")
         exit(1)
 
-    # Convert text labels to numeric if they're not already numeric
     if df['label'].dtype == 'object':
         df['label'] = df['label'].map(label_map)
 
-    # Verify label conversion
     if df['label'].isnull().any():
         print("Error: Some labels could not be mapped properly.")
         exit(1)
 
-    # Plot label distribution with Seaborn
     plt.figure(figsize=(8, 5))
     sns.countplot(data=df, x='label', order=range(len(label_map)), palette='Set2')
     plt.title('Binary Classification Label Distribution')
@@ -100,16 +87,13 @@ if choice == "1":
     plt.tight_layout()
     plt.show()
 
-
-    # Split the dataset into training and validation sets
+    # training split
     train_texts, val_texts, train_labels, val_labels = train_test_split(
-        df['text'].tolist(),  # Text column
-        df['label'].tolist(),  # Label column
+        df['text'].tolist(),  # for debugging : add [:xxxx] x = Integers, after .tolist()
+        df['label'].tolist(),   
         test_size=0.2,
         random_state=42
     )
-
-    # Tokenize and encode function
     def tokenize_and_encode(texts, labels):
         encodings = tokenizer(
             texts,
@@ -118,83 +102,50 @@ if choice == "1":
             max_length=128,
             return_tensors='pt'
         )
-        
-        # Convert to dictionary and add labels
         dataset_dict = {
             'input_ids': encodings['input_ids'],
             'attention_mask': encodings['attention_mask'],
             'labels': torch.tensor(labels)  # Add labels as tensor
         }
-        
-        # Add token_type_ids only if they exist
+
         if 'token_type_ids' in encodings:
             dataset_dict['token_type_ids'] = encodings['token_type_ids']
         
         return Dataset.from_dict(dataset_dict)
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+      
     def compute_metrics(p):
-        # Extract logits and true labels
         logits, labels = p
-        preds = logits.argmax(axis=-1)  # Convert logits to class predictions
+        preds = logits.argmax(axis=-1) 
 
-        # Calculate metrics
         accuracy = accuracy_score(labels, preds)
-        f1 = f1_score(labels, preds, average='binary')  # Binary F1 score
-        precision = precision_score(labels, preds, average='binary', zero_division=1)  # Binary precision
-        recall = recall_score(labels, preds, average='binary', zero_division=1)  # Binary recall
+        f1 = f1_score(labels, preds, average='binary')   
+        precision = precision_score(labels, preds, average='binary', zero_division=1)   
+        recall = recall_score(labels, preds, average='binary', zero_division=1)   
 
-        # Log metrics
         logger.info(f"Accuracy: {accuracy}")
         logger.info(f"F1 Score: {f1}")
         logger.info(f"Precision: {precision}")
         logger.info(f"Recall: {recall}")
 
-        # Return evaluation metrics
         metrics = {
             'eval_accuracy': accuracy,
             'eval_f1': f1,
             'eval_precision': precision,
             'eval_recall': recall
         }
-
         return metrics
 
-    # Create datasets with labels
     train_dataset = tokenize_and_encode(train_texts, train_labels)
     val_dataset = tokenize_and_encode(val_texts, val_labels)
 
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3, 
                                         early_stopping_threshold=0.01)
+    
+    outputs_dir = os.path.join(os.getcwd(), 'outputs')
+    logs_dir = os.path.join(os.getcwd(), 'logs')
 
     final_training_args = TrainingArguments(
-        output_dir='./final_results_bs1',
+        output_dir=outputs_dir,
         per_device_train_batch_size=32,
         num_train_epochs=3,
         weight_decay=0.02,
@@ -205,7 +156,7 @@ if choice == "1":
         eval_steps=100,
         save_steps=500,
         save_strategy="steps",
-        logging_dir='./bvd_logs_1',
+        logging_dir=logs_dir,
         logging_steps=10,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
@@ -214,9 +165,7 @@ if choice == "1":
         disable_tqdm=False,
         max_grad_norm=2.3 
     )
-    
 
-    # Initialize trainer with compute_metrics
     trainer = Trainer(
         model=model,
         args=final_training_args,
@@ -226,11 +175,10 @@ if choice == "1":
         callbacks=[loss_callback, early_stopping]
     )
 
-    # Train the model, resuming from last checkpoint *maintain training argusments the same
+    # trainer.train(checkpoint-xxxx) : if resuming from checkpoint (eg. human error)
     trainer.train()
 
-    # Save the fine-tuned model
-    saved_title = "blackstar_1"
+    saved_title = "stardust_1"
     model.save_pretrained(saved_title)
     tokenizer.save_pretrained(saved_title)
     print("Further fine-tuning completed and model saved.")
