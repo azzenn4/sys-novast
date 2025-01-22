@@ -1,5 +1,5 @@
 # Technical Demo
-![Demo](https://www.youtube.com/watch?v=4Fd5_Mu-kIQ&t=2s)
+[tech demo](https://www.youtube.com/watch?v=4Fd5_Mu-kIQ&t=2s)
 
 
 
