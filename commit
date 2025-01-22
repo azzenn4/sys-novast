@@ -1,5 +1,5 @@
 Propose new features or optimization :
 
 > Built-in real time user voice recognition for communicating with the AI via keybinding.
-> Overwrite legacy RoBERTa attention mechanism with FlashAttention
+> Function modularity, (eg. separate .py codes from run.py functions)
 > JIT C/C++ compiler for several functions
