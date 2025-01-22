@@ -1,20 +1,17 @@
 
 # DEVELOPER
-
-
 | Name                  | Affiliation       | Role             | Contact                   |
 |-----------------------|-------------------|------------------|---------------------------|
 | Rezky Mulia Kam       | BINUS University  | Maintainer       | rezky.kam@binus.ac.id     |
 | Juanita G. Bakara     | BINUS University  | Documentation    | juanita.bakara@binus.ac.id|
 
 
-
-
 # Description
-    System-NovaAstra is developed for adequate scalability with no need to use Google Colab or
-    other Cloud Computing services. It can run locally on your Laptop or Desktop, provided
-    the hardware meets the requirements.
-
+    System-NovaAstra is developed for adequate scalability with no need to use Cloud Computing services. 
+    It can run locally on your Laptop or Desktop, provided the hardware meets the requirements.
+    The goal is to make a powerful integrated AI system while maintaining transparency and user
+    privacy-focused companion.
+    
     The system has been optimized and tested using the 'Lowest Specs. Tes'
     specifications (detailed below). For reference, initial hardware specification can be
     found in the "DEVELOPMENT HARDWARE" section.
