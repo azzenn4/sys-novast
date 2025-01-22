@@ -2,6 +2,7 @@ Code of Conduct for Emotionally Aware Systems Development
 1. Purpose
 
 The purpose of this Code of Conduct is to outline the expected behaviors and responsibilities for engineers and team members involved in the design, development, and implementation of Emotionally Aware Systems, specifically in the context of psychological therapy systems powered by artificial intelligence (AI). These systems leverage emotionally intelligent models and are designed to maintain user privacy, ensure ethical use, and promote effective outcomes in sensitive scenarios such as psychological therapy.
+
 2. Ethical Responsibility
 
     Respect for User Privacy: All system designs, models, and processes should prioritize user privacy. The system must operate entirely on local inference to ensure that sensitive user data is never exposed or stored in any external servers or databases.
