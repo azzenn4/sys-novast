@@ -1,4 +1,7 @@
-# Technical Demo
+>  # Developer Interface (preview)
+![Alt text](examples/quickview.png)
+
+# Live Demo
 [![Demo](https://img.youtube.com/vi/4Fd5_Mu-kIQ/0.jpg)](https://www.youtube.com/watch?v=4Fd5_Mu-kIQ&t=2s)
 
 
@@ -61,8 +64,7 @@
     RAM: 3200MhZ 1x8GB
     Exclusion : Disable ParlerTTS, 4GB VRAM is not enough for Acoustic Modelling.
 
->  # Developer Interface (preview)
-![Alt text](examples/quickview.png)
+
 
 # Troubleshoot
 > For use on Windows 11 Operating System :
