@@ -20,7 +20,8 @@
     and Linux offers superior I/O performance (eg. Tesseract-OCR). 
 
     Initial goal of this project is provided as an Open-Source software specifically designed for the
-    mental health industry. It is not intended for revenue generation or profit.
+    mental health industry. It is not intended for revenue generation or profit by filling
+    the gap of contextual emotional awareness and emotional intelligence found in common chatbots.
     
     Thus, developer sees an opportunity that this project have a potential for alot more diverse use.
 
