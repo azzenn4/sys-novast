@@ -1,4 +1,4 @@
->  # Developer Interface (preview)
+# Developer Interface (preview)
 ![Alt text](examples/quickview.png)
 
 # Live Demo
