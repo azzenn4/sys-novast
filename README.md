@@ -89,12 +89,12 @@
     RAM: 3200MhZ 1x8GB
     Exclusion : Disable ParlerTTS, 4GB VRAM is not enough for Acoustic Modelling.
 
-    ** 
+ 
 
-            For use on Windows 11 Operating System:
-            Please check the 'to/your/path' format as it's different from Linux
+    > For use on Windows 11 Operating System:
+    > Please check the 'to/your/path' format as it's different from Linux
 
-    **
+
 
 
 
