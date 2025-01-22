@@ -48,7 +48,7 @@
 >   # Initial Testing :
     OPERATION SYSTEM: ARCH-LINUX 
     ARCH : x86_64
-    COMPOSITOR : WAYLAND
+    COMPOSITOR : WAYLAND with Hyprland WM
     KERNEL: 6.12.9-arch-1-1
     CPU: Ryzen 7 7745HX 8 CORES 16 THREADS
     GPU: NVIDIA RTX 4070 Max-Q 5.888 CUDA CORE 8GB
@@ -57,7 +57,7 @@
 >   # Lowest Specs. Testing :
     OPERATION SYSTEM: UBUNTU 24.04.1 LTS 
     ARCH : x86_64 
-    COMPOSITOR : WAYLAND with KWin Windows Manager
+    COMPOSITOR : WAYLAND with KWin WM
     KERNEL: 6.8.0-50-generic
     CPU: INTEL i3-12100F 4 CORES 8 THREADS
     GPU: RTX 2050 2.048 CUDA CORES 4GB
