@@ -1,9 +1,5 @@
 
-# Meet the Developer
-| Name                  | Affiliation       | Role             | Contact                   |
-|-----------------------|-------------------|------------------|---------------------------|
-| Rezky Mulia Kam       | BINUS University  | Maintainer       | rezky.kam@binus.ac.id     |
-| Juanita G. Bakara     | BINUS University  | Documentation    | juanita.bakara@binus.ac.id|
+
 
 
 # Description
@@ -74,6 +70,13 @@
 > For use on X11 Compositor :
 > Check OpenCV support, particularly found in os.environment module or
 > explicitly set on bash terminal.
+
+
+# Devs
+| Name                  | Affiliation       | Role             | Contact                   |
+|-----------------------|-------------------|------------------|---------------------------|
+| Rezky Mulia Kam       | BINUS University  | Maintainer       | rezky.kam@binus.ac.id     |
+| Juanita G. Bakara     | BINUS University  | Documentation    | juanita.bakara@binus.ac.id|
 
 # Notice
 > Due to the need of XAI for this project, we cannot yet ensure its reliability in real world,
