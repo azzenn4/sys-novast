@@ -12,7 +12,7 @@ This Code of Conduct outlines the expected behaviors and responsibilities for en
 
     Emotional Sensitivity: AI models must be carefully fine-tuned to handle emotional contexts with care and avoid outputs that may cause distress, confusion, or harm.
 
-    Bias Mitigation: Proactively address and mitigate biases in models (e.g., RoBERTa, LLAMA, LSTM). Ensure fairness and inclusivity across all interactions, regardless of the system’s application.
+    Bias Mitigation: Proactively address and mitigate biases in models (e.g., BERT, LLAMA, LSTM). Ensure fairness and inclusivity across all interactions, regardless of the system’s application.
 
 3. Transparency and Accountability
 
