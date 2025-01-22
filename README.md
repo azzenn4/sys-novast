@@ -1,4 +1,5 @@
-
+# Technical Demo
+![Alt text](examples/tech_demo.mp4)
 
 
 
