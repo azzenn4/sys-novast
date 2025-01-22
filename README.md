@@ -67,7 +67,7 @@
 
 > For use on X11 Compositor :
 > Check OpenCV support, particularly found in os.environment module or
-> explicily set on bash terminal.
+> explicitly set on bash terminal.
 
 
 > Due to the need of XAI for this project, we cannot yet ensure its reliability in real world,
