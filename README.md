@@ -16,8 +16,8 @@
     specifications (detailed below). For reference, initial hardware specification can be
     found in the 'Initial Testing' section.
 
-    Linux is the recommended operating system, as kernel parameter optimization is crucial
-    and Linux offers superior I/O performance (eg. Tesseract-OCR). 
+    For now, NovaAstra is optimized for machines running on Linux , but still
+    needs further development for Windows 11 and MacOS.
 
     Initial goal of this project is provided as an Open-Source software specifically designed for the
     mental health industry. It is not intended for revenue generation or profit by filling
@@ -62,8 +62,12 @@
     RAM: 3200MhZ 1x8GB
     Exclusion : Disable ParlerTTS, 4GB VRAM is not enough for Acoustic Modelling.
 
-> For use on Windows 11 Operating System:
+> For use on Windows 11 Operating System :
 > Please check the 'to/your/path' format as it's different from Linux
+
+> For use on X11 Compositor :
+> Check OpenCV support, particularly found in os.environment module or
+> explicily set on bash terminal.
 
 
 > Due to the need of XAI for this project, we cannot yet ensure its reliability in real world,
