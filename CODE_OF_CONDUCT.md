@@ -16,7 +16,7 @@ This Code of Conduct outlines the expected behaviors and responsibilities for en
 
 3. Transparency and Accountability
 
-    System Documentation: Maintain clear and accessible documentation of the AI models (e.g., RoBERTa, ParlerTTS, Unidirectional LSTM, LLAMA 3.2), their roles, and how they interact in a unified pipeline. Include details about the trade-offs made during optimization.
+    System Documentation: Maintain clear and accessible documentation of the AI models (e.g., BERT, ParlerTTS, Unidirectional LSTM, LLAMA 3.2), their roles, and how they interact in a unified pipeline. Include details about the trade-offs made during optimization.
 
     Performance Accountability: Ensure the system performs reliably across all supported roles, with a focus on accurate and contextually appropriate outputs. Regularly test and validate the system's performance in real-world applications.
 
