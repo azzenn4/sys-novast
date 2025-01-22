@@ -12,9 +12,9 @@
     The goal is to make a powerful integrated AI system while maintaining transparency and user
     privacy-focused companion.
     
-    The system has been optimized and tested using the 'Lowest Specs. Tes'
+    The system has been optimized and tested using the 'Lowest Specs. Testing'
     specifications (detailed below). For reference, initial hardware specification can be
-    found in the "DEVELOPMENT HARDWARE" section.
+    found in the 'Initial Testing' section.
 
     Linux is the recommended operating system, as kernel parameter optimization is crucial
     and Linux offers superior I/O performance (eg. Tesseract-OCR). 
