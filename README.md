@@ -1,5 +1,5 @@
 
-# DEVELOPER
+# Meet the Developer
 | Name                  | Affiliation       | Role             | Contact                   |
 |-----------------------|-------------------|------------------|---------------------------|
 | Rezky Mulia Kam       | BINUS University  | Maintainer       | rezky.kam@binus.ac.id     |
@@ -64,7 +64,7 @@
     RAM: 3200MhZ 1x8GB
     Exclusion : Disable ParlerTTS, 4GB VRAM is not enough for Acoustic Modelling.
 
->  # Preview
+>  # Developer Interface (preview)
 ![Alt text](examples/quickview.png)
 
 # Troubleshoot
