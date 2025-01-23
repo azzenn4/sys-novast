@@ -466,7 +466,7 @@ def normalize_data(X, y):
     
     return X_scaled, y_scaled, scaler
 
-)
+
 def train_lstm(X_tensor, y_tensor, input_size, hidden_size, num_layers, num_epochs, learning_rate, forecast_steps, num_features):
     # initialize model && parameter
     model = LSTMModel(
@@ -746,7 +746,6 @@ def capture_and_detect():
     trend_summary = []
     cast_iter = 0
     mouse = Controller()
-    global cast_iter
     global jenny_color
     font = cv2.FONT_HERSHEY_COMPLEX
     met_len = 0
