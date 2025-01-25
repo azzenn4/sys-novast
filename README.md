@@ -48,7 +48,7 @@
 >   # Initial Testing :
     OPERATION SYSTEM: ARCH-LINUX 
     ARCH : x86_64
-    COMPOSITOR : WAYLAND with Hyprland WM
+    COMPOSITOR : WAYLAND with Hyprland WM ( Headless without OpenCV interface )
     KERNEL: 6.12.9-arch-1-1
     CPU: Ryzen 7 7745HX 8 CORES 16 THREADS
     GPU: NVIDIA RTX 4070 Max-Q 5.888 CUDA CORE 8GB
