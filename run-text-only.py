@@ -227,7 +227,7 @@ def get_emotion(texts, threshold=0.2, temperature=1.0, top_n=3):
 
 '''
 
- For now. Currently, the models are fine tuned off "almost relevant" datasets to simulate empathy
+ For now. Currently, the models are fine tuned off suicide assesment datasets to simulate reaction to empathy
  by suicide and non-suicide probabilities, in the meantime it is expected
  to fine-tune the model with a more relevant dataset. 
  This is due to initial goal for NovaAstra as a Psychologist that handle
@@ -260,9 +260,6 @@ def get_suicide_risk(texts):
     except Exception as e:
         print(f"Error occurred: {e}")
         return None
-
-
-
 
 '''
 
@@ -658,6 +655,7 @@ def text_gen_only(tcp):
             }
         )
         generated_text = "".join(chunk['message']['content'] for chunk in stream)
+
         # print(f"Llama said : {generated_text}") # uncomment for debugging
         global jenny_color 
         jenny_color = (244, 0, 252)
@@ -727,10 +725,9 @@ NovaAstra Interface - OpenCV
 
 We are currently planning to use Qt6; 
 however, we have noticed that Qt6 consumes a significant amount of VRAM and RAM, 
-which could affect scalability. 
+which could is absolutely unnecessary since its only for development. 
 Therefore, 
-we are considering that the OpenCV interface may only be necessary for pre-release stages.
-
+we are considering that the OpenCV interface is enough.
 We hope that those who have contributed to this project can better understand the context and potentially provide suggestions or solutions.
     
 '''
