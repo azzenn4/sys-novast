@@ -1,3 +1,12 @@
+'''
+
+ the main script for running sys-novast, the code is somehow cluttered and needs to introduce code modularity for .py files with specialized function to-tasks
+
+'''
+
+
+
+
 import torch
 from transformers import (
     AutoModelForSequenceClassification,
