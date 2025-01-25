@@ -69,6 +69,9 @@
 
 # Training Metrics
 **Notice : Both models are using ModernBERT instead of RoBERTa, since ModernBERT hasn't been published yet at the earliest stages and the demo.**
+
+>   # Multiclass Post-Training Metrics
+![Alt text](metrics/_multiclass_metrics.png)
 >   # Multiclass Confusion Matrix ( 20.000 samples )
 ![Alt text](metrics/multiclass_cm.png)
 >   # Binary Post-Training Metrics
