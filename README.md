@@ -33,7 +33,7 @@
 
 # Setup
 
-    # Setup dependencies
+    # Install dependencies ( Make sure you're inside virtual environment )
     pip install -r requirements.txt
 
     # Install Ollama 
@@ -53,6 +53,10 @@
     git clone https://huggingface.co/aireez4/stardust_6
     # If you want to clone without large files - just their pointers
     GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/aireez4/stardust_6
+
+    # try to run, if problem persist please report issue to the repo
+    cd ..
+    python __init__.py
     
 
 # Environment
