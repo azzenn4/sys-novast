@@ -68,7 +68,7 @@
 ![Alt text](metrics/distribution_6.png)
 
 # Training Metrics
-**Notice :Both models are using ModernBERT instead of RoBERTa, since ModernBERT hasn't been published yet at the earliest stages and the demo.**
+**Notice : Both models are using ModernBERT instead of RoBERTa, since ModernBERT hasn't been published yet at the earliest stages and the demo.**
 >   # Multiclass Confusion Matrix
 
 ![Alt text](metrics/multiclass_cm.png)
