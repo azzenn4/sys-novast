@@ -32,6 +32,10 @@
     Thus, developer sees an opportunity that this project have a potential for alot more diverse use.
 
 # Setup
+    # Clone this repo
+    mkdir sys-novast
+    cd sys-novast
+    git clone "https://github.com/azzenn4/sys-novast.git"
 
     # Install dependencies ( Make sure you're inside virtual environment )
     pip install -r requirements.txt
