@@ -1,9 +1,7 @@
 import torch
 from transformers import (
-    RobertaForSequenceClassification,
-    RobertaTokenizer,
-    AutoTokenizer,
-    set_seed
+    AutoModelForSequenceClassification,
+    AutoTokenizer
 )
 import numpy as np
 import pytesseract
@@ -17,14 +15,10 @@ from pynput.mouse import Controller
 from sklearn.preprocessing import StandardScaler
 import multiprocessing
 import torch.nn.functional as F
-import pygame
 from concurrent.futures import ProcessPoolExecutor
 import re
 from ollama import chat 
 from parler_tts import ParlerTTSForConditionalGeneration
-import sounddevice as sd
-import spacy
-from collections import Counter
 import threading
 import queue
 
@@ -42,29 +36,17 @@ else:
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load quantized 'blackstar_6' model and tokenizer
-model_6_path = "./quantized_blackstar_6.pth"
-tokenizer_6 = RobertaTokenizer.from_pretrained("./models/blackstar_6")
-model_6 = RobertaForSequenceClassification.from_pretrained("./models/blackstar_6", num_labels=6)
-model_6.load_state_dict(torch.load(model_6_path), strict=False)
+# example model trained using ./trainer/{mutliclass trainer}.py
+# model : multiclass classification -> 6 labels
+tokenizer_6 = AutoTokenizer.from_pretrained("./models/stardust_6")
+model_6 = AutoModelForSequenceClassification.from_pretrained("./models/stardust_6", num_labels=6)
 model_6 = model_6.to(device)
-print("Quantized model 'blackstar_6' and its tokenizer loaded.")
 
-# Load quantized 'blackstar_1' model and tokenizer
-model_1_path = "./quantized_blackstar_1.pth"
-tokenizer_1 = RobertaTokenizer.from_pretrained("./models/blackstar_1")
-model_ax1 = RobertaForSequenceClassification.from_pretrained("./models/blackstar_1", num_labels=2)
-model_ax1.load_state_dict(torch.load(model_1_path), strict=False)
+# example model trained using ./trainer/{binary trainer}.py
+# model : binary classification -> 2 labels
+tokenizer_1 = AutoTokenizer.from_pretrained("./models/stardust_1")
+model_ax1 = AutoModelForSequenceClassification.from_pretrained("./models/stardust_1", num_labels=2)
 model_ax1 = model_ax1.to(device)
-print("Quantized model 'blackstar_1' and its tokenizer loaded.")
-
-# Load voice generation
-model_vgen = ParlerTTSForConditionalGeneration.from_pretrained("parler-tts/parler-tts-mini-jenny-30H").to(device)
-tokenizer_vgen = AutoTokenizer.from_pretrained("parler-tts/parler-tts-mini-jenny-30H", add_prefix_space=True)
-print("Voice Generation Loaded.")
-
-# Load spacy NER
-nlp = spacy.load("en_core_web_sm")
 
 if torch.cuda.is_available():
     print("Final GPU Memory Allocated:", torch.cuda.memory_allocated())
@@ -227,7 +209,7 @@ def get_emotion(texts, threshold=0.2, temperature=1.0, top_n=3):
 
 '''
 
- For now. Currently, the models are fine tuned off suicide assesment datasets to simulate reaction to empathy
+ For now. Currently, the models are fine tuned off "almost relevant" datasets to simulate empathy
  by suicide and non-suicide probabilities, in the meantime it is expected
  to fine-tune the model with a more relevant dataset. 
  This is due to initial goal for NovaAstra as a Psychologist that handle
@@ -273,11 +255,11 @@ metadata = []
 def get_embedding(texts, model, tokenizer, device):
     inputs = tokenizer(texts, return_tensors="pt", truncation=True, padding=True, max_length=512)
     with torch.no_grad():
-        if isinstance(model, RobertaForSequenceClassification):
-            # For fine-tuned classification model
+        if isinstance(model, AutoModelForSequenceClassification):
+            # for RoBERTa
             outputs = model.roberta(**inputs.to(device), output_hidden_states=True)
         else:
-            # For models like RobertaModel or others where embeddings are needed
+            # for models like RoBERTa or others where embeddings are needed
             outputs = model(**inputs.to(device), output_hidden_states=True)
     hidden_states = outputs.hidden_states
     embedding = hidden_states[-1].mean(dim=1).squeeze().cpu().numpy()
@@ -621,7 +603,6 @@ def text_gen_only(tcp):
         empathy_rate = empathy_['suicide_prob'] * 100
         conv_ = emo_flow[-1]
         conv_flow = conv_[0]
-
         # what emotion to react as relevant to opposite emotion (NovaAstra | Subject)
         emotion_to_reaction = {
             'sadness': "compassion", 'joy': "cheerfulness",
@@ -633,10 +614,11 @@ def text_gen_only(tcp):
         print(f"Subject : {subject_name}")
         print(f"primary emotion : {primary_emo} || empathy rate : {empathy_rate} || conv flow : {conv_flow}")
         print(f"TEXT : {_texts}")
+        # currently hard-coded prompts, in the meantime it should use generated reasoning like deepseek-r1, however this affects performance significantly
         prompt_parts = [
             f"You're currently talking with {subject_name}, he/she is feeling {primary_emo} right now.", # < subject introduction
             f"He/she is saying this : {_texts} lately." # < subject context
-            f"it seems that {subject_name} is experiencing {next(iter(tcp))} right now, however you can feel that the conversation is going to be full of {conv_flow}", # < simulate reaction via dimensionality emo
+            f"it seems that {subject_name} is experiencing {next(iter(tcp))} right now, however you can feel that the conversation is going to be full of {conv_flow}", # < simulate reaction 
             f"React something about {subject_name} condition,  Give your advice about {subject_name} condition to me", # <  TODO
             f"Respond with {react_} on giving advice about {subject_name} statement and emotions its feeling,", # < TODO REACT
             f"dont ask any question just provide your genuine reaction about what {subject_name} just said." # TODO CONSTRAINT
@@ -655,7 +637,6 @@ def text_gen_only(tcp):
             }
         )
         generated_text = "".join(chunk['message']['content'] for chunk in stream)
-
         # print(f"Llama said : {generated_text}") # uncomment for debugging
         global jenny_color 
         jenny_color = (244, 0, 252)
@@ -725,9 +706,10 @@ NovaAstra Interface - OpenCV
 
 We are currently planning to use Qt6; 
 however, we have noticed that Qt6 consumes a significant amount of VRAM and RAM, 
-which could is absolutely unnecessary since its only for development. 
+and also unnecessary since the end goal of sys-nova is running headless. 
 Therefore, 
-we are considering that the OpenCV interface is enough.
+we are considering that the OpenCV interface may only be necessary for early stages.
+
 We hope that those who have contributed to this project can better understand the context and potentially provide suggestions or solutions.
     
 '''
@@ -909,4 +891,3 @@ if __name__ == "__main__":
 
 
     
-
