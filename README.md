@@ -1,12 +1,12 @@
-# Developer Interface (preview)
-![Alt text](examples/quickview.png)
 
 # Demo
 ![Alt text](examples/demo_1.gif)
 
+# Developer Interface (preview)
+![Alt text](examples/quickview.png)
+
 # Technical Demo
 [![Demo](https://img.youtube.com/vi/W3nKr_7zWZs/hqdefault.jpg)](https://www.youtube.com/watch?v=W3nKr_7zWZs)
-
 
 
 # Description
@@ -30,6 +30,30 @@
     the gap of contextual emotional awareness and emotional intelligence found in common chatbots.
     
     Thus, developer sees an opportunity that this project have a potential for alot more diverse use.
+
+# Setup
+
+    # Setup dependencies
+    pip install -r requirements.txt
+
+    # Install Ollama 
+    curl -fsSL https://ollama.com/install.sh | sh
+    ollama pull llama3.2:3b
+
+    cd models
+    # Make sure you have git-lfs installed (https://git-lfs.com)
+    git lfs install
+    git clone https://huggingface.co/aireez4/stardust_1
+    # If you want to clone without large files - just their pointers
+    GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/aireez4/stardust_1
+
+    cd ..
+    # Make sure you have git-lfs installed (https://git-lfs.com)
+    git lfs install
+    git clone https://huggingface.co/aireez4/stardust_6
+    # If you want to clone without large files - just their pointers
+    GIT_LFS_SKIP_SMUDGE=1 git clone https://huggingface.co/aireez4/stardust_6
+    
 
 # Environment
     DRIVER VERSION: 560.35.03
