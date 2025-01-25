@@ -64,7 +64,14 @@
     RAM: 3200MhZ 1x8GB
     Exclusion : Disable ParlerTTS, 4GB VRAM is not enough for Acoustic Modelling.
 
+# Multiclass Dataset Distribution
+![Alt text](metrics/distribution_6.png)
 
+# Training Metrics
+>   # Multiclass Confusion Matrix
+![Alt text](metrics/multiclass_cm.png)
+>   # Binary Post-Training Metrics
+![Alt text](metrics/metrics_binary.png)
 
 # Troubleshoot
 > For use on Windows 11 Operating System :
