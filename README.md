@@ -72,6 +72,7 @@
 >   # Multiclass Confusion Matrix ( 20.000 samples )
 ![Alt text](metrics/multiclass_cm.png)
 >   # Binary Post-Training Metrics
+** note : there might be a misunderstanding for f1, accuracy and precision score due to compute metrics using argmax instead of sigmoid / 2 for binary classification
 ![Alt text](metrics/metrics_binary.png)
 
 # Troubleshoot
