@@ -1,7 +1,10 @@
 # Developer Interface (preview)
 ![Alt text](examples/quickview.png)
 
-# Live Demo
+# Demo
+![Alt text](examples/demo_1.gif)
+
+# Technical Demo
 [![Demo](https://img.youtube.com/vi/W3nKr_7zWZs/hqdefault.jpg)](https://www.youtube.com/watch?v=W3nKr_7zWZs)
 
 
