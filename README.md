@@ -1,6 +1,6 @@
 
 # Demo
-![Alt text](examples/demo_0.gif)
+![Alt text](examples/demo_1.gif)
 
 # Developer Interface (preview)
 ![Alt text](examples/quickview.png)
