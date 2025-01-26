@@ -1,4 +1,5 @@
 '''
+  dummy init because i lose myself
 
   the writer of this script feels like its duct-taping a llama to spaceX starship :
   
