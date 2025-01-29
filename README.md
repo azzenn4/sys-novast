@@ -11,7 +11,7 @@
 
 # Description
 
-    JARVIS might be sophisticated, but System-NovaAstra can understand you.
+    JARVIS might be sophisticated, but System-NovaAstra understands your feeling.
 
     System-NovaAstra is developed for adequate scalability with no need to use Cloud Computing services. 
     It can run locally on your Laptop or Desktop, provided the hardware meets the requirements.
