@@ -66,16 +66,7 @@ if torch.cuda.is_available():
     
 print(model_ax1)
 
-'''
 
-    Composite Emotions, inspired by :
-    
-        Paul Ekman's Theory Of Emotions
-        Russels J. A Dimension of Emotion
-        Richard Lazarus Cognitive Appraisal
-        Jaak Panksepp Affective Neuroscience
-    
-'''
 
 
 
