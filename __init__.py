@@ -15,24 +15,21 @@ from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer
 )
+from CompositeDictionary import composite_emotions
 import numpy as np
 import pytesseract
 from mss import mss
 import cv2
-import os
 import faiss
 from sklearn.metrics.pairwise import cosine_similarity
 import torch.nn as nn
 from pynput.mouse import Controller
 from sklearn.preprocessing import StandardScaler
-import multiprocessing
 import torch.nn.functional as F
 from concurrent.futures import ProcessPoolExecutor
-import re
 from ollama import chat 
 from parler_tts import ParlerTTSForConditionalGeneration
-import threading
-import queue
+import queue, threading, re, multiprocessing, os
 
 os.environ["TRANSFORMER_NO_ADVISORY_WARNINGS"] = "1"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
