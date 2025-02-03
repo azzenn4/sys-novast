@@ -9,7 +9,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import os
 from typing import Dict, List, Tuple, Optional
 import numpy as np
-from CompositeVectors import CompositeDictionary
+from WeightedCompDictionary import CompositeDictionary
 from dataclasses import dataclass
 
 @dataclass
