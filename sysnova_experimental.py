@@ -1,14 +1,11 @@
 '''
-  dummy init because i lose myself
 
-  the writer of this script feels like its duct-taping a llama to spaceX starship :
-  
-  the main script for running sys-novast, the code is somehow cluttered and needs to introduce code modularity for .py files with specialized function to-tasks
+  Rapid prototype code,
+  needs refactorizing.
+
+  ! Note : Not thread safe, use with caution. !
 
 '''
-
-
-
 
 import torch
 from transformers import (
