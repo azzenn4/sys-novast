@@ -138,6 +138,12 @@ class EmotionClassifier:
                 dominant_composite_percentage=0.0,
                 top_n_composite_emotions={}
             )
+'''
+
+  Example class usage
+
+'''
+
 
 if __name__ == "__main__":
     local_directory = os.getcwd()
