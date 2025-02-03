@@ -1,6 +1,6 @@
 '''
 
-  Framework for update
+  Framework for update, this code for sentiment analysis task is refactorized from rapid prototyping with minor adjustment and efficiency optimization
 
 '''
 
