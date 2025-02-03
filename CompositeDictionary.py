@@ -1,5 +1,13 @@
+'''
 
-
+    Composite Emotions, inspired by :
+    
+        Paul Ekman's Theory Of Emotions
+        Russels J. A Dimension of Emotion
+        Richard Lazarus Cognitive Appraisal
+        Jaak Panksepp Affective Neuroscience
+    
+'''
 
 composite_emotions = {
     "wistfulness which is bittersweet": {0, 1, 2},  # sadness + joy + love
