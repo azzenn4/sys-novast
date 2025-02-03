@@ -1,3 +1,11 @@
+'''
+
+    Updated Composite Dictionary : Weight's adjustment for advanced use,
+    currently working on dynamic weights adjustment
+
+'''
+
+
 CompositeDictionary = {
     "bittersweet": {
         'emotions': [0, 1, 2],  # sadness + joy + love
