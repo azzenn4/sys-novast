@@ -214,12 +214,7 @@ metadata = []
 def get_embedding(texts, model, tokenizer, device):
     inputs = tokenizer(texts, return_tensors="pt", truncation=True, padding=True, max_length=512)
     with torch.no_grad():
-        if isinstance(model, AutoModelForSequenceClassification):
-            # for RoBERTa
-            outputs = model.roberta(**inputs.to(device), output_hidden_states=True)
-        else:
-            # for models like RoBERTa or others where embeddings are needed
-            outputs = model(**inputs.to(device), output_hidden_states=True)
+         outputs = model(**inputs.to(device), output_hidden_states=True)
     hidden_states = outputs.hidden_states
     embedding = hidden_states[-1].mean(dim=1).squeeze().cpu().numpy()
     
