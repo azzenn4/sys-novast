@@ -628,6 +628,11 @@ def text_gen_only(tcp):
         print(f"primary emotion : {primary_emo} || empathy rate : {empathy_rate} || conv flow : {conv_flow}")
         print(f"TEXT : {_texts}")
         # currently hard-coded prompts, in the meantime it should use generated reasoning like deepseek-r1, however this affects performance significantly
+        # structure : future : 
+      
+      # prompt/reasoning : prompt > fine tuning | reasoning extract only <think> tags from deepseek r1
+      
+    
         prompt_parts = [
             f"You're currently talking with {subject_name}, he/she is feeling {primary_emo} right now.", # < subject introduction
             f"He/she is saying this : {_texts} lately." # < subject context
@@ -641,12 +646,14 @@ def text_gen_only(tcp):
         print("Thinking...")
         stream = chat(
             model='llama3.2',
-            messages=[{'role': 'user', 'content': rest_}],
-            stream=True,
+            # changed role to 'assistant' from 'user'
+            messages=[{'role': 'assistant', 'content': rest_}],
+            stream=False, # set to false, currently opencv dev interface doesn't support sequential streaming 
             options={
                 "num_ctx": 8192,  
                 "f16_kv": True, #  set to FP16
-                "seed": 42
+                "seed": 42,
+                "num_batch": 16 # for consumer grade, (eg., 30, 40 series) set 16-32
             }
         )
         generated_text = "".join(chunk['message']['content'] for chunk in stream)
