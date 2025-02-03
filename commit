@@ -3,3 +3,4 @@ Propose new features or optimization :
 > Built-in real time user voice recognition for communicating with the AI via keybinding.
 > Function modularity, (eg. separate .py codes from run.py functions)
 > JIT C/C++ compiler for several functions
+> Reasoning prompt for Ollama in text_gen_only().func , *currently hard coded
